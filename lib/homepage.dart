@@ -106,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: ((context, index) {
                 String formattedDate = DateFormat.yMMMEd()
                     .format(appointments[index].appointmentDate!);
-                TimeOfDay appointmentTime =
+                TimeOfDay? appointmentTime =
                     appointments[index].appointmentTime!;
 
                 String formattedTime = appointmentTime.format(context);

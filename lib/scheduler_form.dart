@@ -34,9 +34,7 @@ class _SchedulerFormState extends State<SchedulerForm> {
   @override
   void initState() {
     if (widget.selectedAppointment != null) {
-      setState(() {
-        appointmentBeingEdited = widget.selectedAppointment!;
-      });
+      appointmentBeingEdited = widget.selectedAppointment!;
     }
     super.initState();
   }
@@ -44,18 +42,7 @@ class _SchedulerFormState extends State<SchedulerForm> {
   @override
   void didChangeDependencies() {
     if (widget.selectedAppointment != null) {
-      setState(() {
-        String formattedDate =
-            DateFormat.yMMMEd().format(appointmentBeingEdited.appointmentDate!);
-        TimeOfDay appointmentTime = appointmentBeingEdited.appointmentTime!;
-
-        String formattedTime = appointmentTime.format(context);
-
-        dateInput.text = formattedDate;
-        timeInput.text = formattedTime;
-        descriptionInput.text = appointmentBeingEdited.description!;
-        isUpdatingAppointment = true;
-      });
+      _resetAppointmentForEdit();
     }
     super.didChangeDependencies();
   }
@@ -66,6 +53,19 @@ class _SchedulerFormState extends State<SchedulerForm> {
     timeInput.dispose();
     descriptionInput.dispose();
     super.dispose();
+  }
+
+  void _resetAppointmentForEdit() {
+    String formattedDate =
+        DateFormat.yMMMEd().format(appointmentBeingEdited.appointmentDate!);
+    TimeOfDay appointmentTime = appointmentBeingEdited.appointmentTime!;
+
+    String formattedTime = appointmentTime.format(context);
+
+    dateInput.text = formattedDate;
+    timeInput.text = formattedTime;
+    descriptionInput.text = appointmentBeingEdited.description!;
+    isUpdatingAppointment = true;
   }
 
   List<DropdownMenuItem<String>> get dropdownItems {
@@ -139,167 +139,177 @@ class _SchedulerFormState extends State<SchedulerForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: 25.0,
-            right: 25.0,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Date',
-                    ),
-                    readOnly: true,
-                    controller: dateInput,
-                    onTap: () async {
-                      DateTime? newDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2022),
-                        lastDate: DateTime(2100),
-                      );
-
-                      if (newDate == null) return;
-
-                      String formattedDate =
-                          DateFormat.yMMMEd().format(newDate);
-
-                      setState(() {
-                        appointmentBeingEdited.appointmentDate = newDate;
-                        dateInput.text = formattedDate;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Time',
-                    ),
-                    readOnly: true,
-                    controller: timeInput,
-                    onTap: () async {
-                      TimeOfDay? newTime = await showTimePicker(
-                        context: context,
-                        initialTime: appointmentBeingEdited.appointmentTime ??
-                            TimeOfDay.now(),
-                      );
-
-                      if (newTime == null) return;
-
-                      String formattedTime = newTime.format(context);
-
-                      setState(() {
-                        appointmentBeingEdited.appointmentTime = newTime;
-                        timeInput.text = formattedTime;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: DropdownButtonFormField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Location',
-                    ),
-                    value: appointmentBeingEdited.location,
-                    items: dropdownItems,
-                    onChanged: (String? value) {
-                      setState(() {
-                        appointmentBeingEdited.location = value;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Description',
-                    ),
-                    maxLength: 40,
-                    controller: descriptionInput,
-                    onChanged: (text) {
-                      setState(() {
-                        appointmentBeingEdited.description = text;
-                      });
-                    },
-                  ),
-                ),
-                if (isUpdatingAppointment) ...[
+    return WillPopScope(
+      onWillPop: () async {
+        // _resetAppointmentForEdit();
+        // setState(() {
+        descriptionInput.text = 'Purple Elephants!!';
+        // });
+        Navigator.pop(context);
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 25.0,
+              right: 25.0,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 60,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          widget.onEditAppointment(
-                              appointmentBeingEdited, widget.appointmenIndex);
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Edit'),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Date',
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                          primary: Colors.red,
-                          minimumSize: const Size(
-                              double.infinity, 60.0) // Background color
-                          ),
-                      onPressed: () async {
-                        _showMaterialDialog(appointmentBeingEdited);
+                      readOnly: true,
+                      controller: dateInput,
+                      onTap: () async {
+                        DateTime? newDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2022),
+                          lastDate: DateTime(2100),
+                        );
+
+                        if (newDate == null) return;
+
+                        String formattedDate =
+                            DateFormat.yMMMEd().format(newDate);
+
+                        setState(() {
+                          appointmentBeingEdited.appointmentDate = newDate;
+                          dateInput.text = formattedDate;
+                        });
                       },
-                      icon: const Icon(Icons.delete),
-                      label: const Text('Delete'),
-                    ),
-                  )
-                ] else ...[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 60,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          widget.onAddAppointment(appointmentBeingEdited);
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text('Create New Appointment'),
-                      ),
                     ),
                   ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Time',
+                      ),
+                      readOnly: true,
+                      controller: timeInput,
+                      onTap: () async {
+                        TimeOfDay? newTime = await showTimePicker(
+                          context: context,
+                          initialTime: appointmentBeingEdited.appointmentTime ??
+                              TimeOfDay.now(),
+                        );
+
+                        if (newTime == null) return;
+
+                        String formattedTime = newTime.format(context);
+
+                        setState(() {
+                          appointmentBeingEdited.appointmentTime = newTime;
+                          timeInput.text = formattedTime;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: DropdownButtonFormField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Location',
+                      ),
+                      value: appointmentBeingEdited.location,
+                      items: dropdownItems,
+                      onChanged: (String? value) {
+                        setState(() {
+                          appointmentBeingEdited.location = value;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Description',
+                      ),
+                      maxLength: 40,
+                      controller: descriptionInput,
+                      onChanged: (text) {
+                        setState(() {
+                          appointmentBeingEdited.description = text;
+                        });
+                      },
+                    ),
+                  ),
+                  if (isUpdatingAppointment) ...[
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            widget.onEditAppointment(
+                                appointmentBeingEdited, widget.appointmenIndex);
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Edit'),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            primary: Colors.red,
+                            minimumSize: const Size(
+                                double.infinity, 60.0) // Background color
+                            ),
+                        onPressed: () async {
+                          _showMaterialDialog(appointmentBeingEdited);
+                        },
+                        icon: const Icon(Icons.delete),
+                        label: const Text('Delete'),
+                      ),
+                    )
+                  ] else ...[
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            widget.onAddAppointment(appointmentBeingEdited);
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Create New Appointment'),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
